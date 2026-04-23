@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CI/CD Lab</title>
+    <style>
+        body { font-family: Arial; max-width: 700px; margin: 40px auto; padding: 20px; }
+        .card { background: #f5f5f5; border-radius: 8px; padding: 16px; margin: 12px 0; }
+        button { background: #326CE5; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>CI/CD Lab: Abdul Rahman Habbal, Ibrahim Missaykeh, Mohamad Wajih Issa</h1>
+    <div class="card" id="health">Loading health...</div>
+    <div class="card" id="visits">Loading visits...</div>
+    <script>
+        const api = '/api';
+        fetch(api+'/health').then(r=>r.json()).then(d=>{
+            document.getElementById('health').innerHTML = '<b>Health:</b> '+d.status+' | <b>Pod:</b> '+d.pod;
+        });
+        fetch(api+'/visits').then(r=>r.json()).then(d=>{
+            document.getElementById('visits').innerHTML = '<b>Visits:</b> '+d.visits;
+        });
+    </script>
+</body>
+</html>
