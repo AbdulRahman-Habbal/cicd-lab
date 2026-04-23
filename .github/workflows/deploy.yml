@@ -51,3 +51,30 @@ jobs:
         run: |
           aws eks update-kubeconfig --region ${{ secrets.AWS_REGION }} --name ${{ secrets.EKS_CLUSTER_NAME }}
           kubectl apply -f manifests/ -n dev
+
+  deploy-prod:
+    needs: build-and-deploy-dev
+    runs-on: ubuntu-latest
+    environment: prod
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Update Kubernetes Manifests
+        env:
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          sed -i "s|PLACEHOLDER|${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/k8s-frontend:$IMAGE_TAG|g" manifests/frontend.yaml
+          sed -i "s|PLACEHOLDER|${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/k8s-backend:$IMAGE_TAG|g" manifests/backend.yaml
+
+      - name: Deploy to EKS (Prod)
+        run: |
+          aws eks update-kubeconfig --region ${{ secrets.AWS_REGION }} --name ${{ secrets.EKS_CLUSTER_NAME }}
+          kubectl apply -f manifests/ -n prod
